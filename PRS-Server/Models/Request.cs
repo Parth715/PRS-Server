@@ -13,16 +13,11 @@ namespace PRS_Server.Models
         public string Justification { get; set; }
         public string RejectionReason { get; set; }
         public string DeliveryMode { get; set; } = "Pickup";
-        public string Status { get; set; } = "New";
+        public string Status { get; set; } = "NEW";
         public decimal Total { get; set; } = 0m;
         public int UserId { get; set; }
         public virtual User User { get; set; }
 
-        
-        /*private decimal RecalculateTotal()
-        {
-
-        }*/
 
         public virtual IEnumerable<RequestLine> RequestLines { get; set; }
         public Request() { }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PRS_Server.Models
 {
-    public class PRSDbContext : DbContext
+        public class PRSDbContext : DbContext
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Vendor> Vendors { get; set; }

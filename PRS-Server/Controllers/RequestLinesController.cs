@@ -89,6 +89,22 @@ namespace PRS_Server.Controllers
 ;
         }
 
+        public async Task<IActionResult> ReCalculate(int requestId)
+        {
+            var request = await _context.Requests.FindAsync(requestId);
+            if (request == null)
+            {
+                NotFound();
+            }
+            request.Total = (from rl in _context.RequestLines
+                             join p in _context.Products
+                             on rl.ProductId equals p.Id
+                             where rl.RequestId == requestId
+                             select new { LineTotal = rl.Quantity * p.Price }).Sum(x => x.LineTotal);
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
         // POST: api/RequestLines
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]

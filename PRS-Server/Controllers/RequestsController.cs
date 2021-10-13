@@ -21,7 +21,14 @@ namespace PRS_Server.Controllers
         }
 
         // GET: api/Requests
+        [HttpGet("reviews/{userId}")]
+        public async Task<ActionResult<IEnumerable<Request>>> GetRequestsInReview(int userId)
+        {
+            var requests = await _context.Requests.Where(j => j.Status == "REVIEW" && j.UserId != userId).ToListAsync();
+            return requests;
+        }
         [HttpGet]
+
         public async Task<ActionResult<IEnumerable<Request>>> GetRequests()
         {
             return await _context.Requests.ToListAsync();
@@ -43,6 +50,36 @@ namespace PRS_Server.Controllers
 
         // PUT: api/Requests/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("review")]
+        public async Task<IActionResult> SetRequestToReview(Request request)
+        {
+            if (request.Status == "NEW")
+            {
+                if (request.Total <= 50)
+                {
+                    request.Status = "APPROVED";
+                }
+                request.Status = "REVIEW";
+            }
+            
+            return await PutRequest(request.Id, request);
+        }
+
+        [HttpPut("approve")]
+        public async Task<IActionResult> SetToApproved(Request request)
+        {
+            request.Status = "APPROVED";
+            return await PutRequest(request.Id, request);
+            
+        }
+
+        [HttpPut("reject")]
+        public async Task<IActionResult> SetToRejected(Request request)
+        {
+            request.Status = "REJECTED";
+            return await PutRequest(request.Id, request);
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> PutRequest(int id, Request request)
         {

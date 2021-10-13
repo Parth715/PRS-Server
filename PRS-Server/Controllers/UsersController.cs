@@ -21,6 +21,17 @@ namespace PRS_Server.Controllers
         }
 
         // GET: api/Users
+        [HttpGet("{username}/{password}")]
+        public async Task<ActionResult<User>> Login(string username, string password)
+        {
+            var user = await _context.Users.SingleOrDefaultAsync(j => j.Username == username && j.Password == password);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return user;
+        }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
