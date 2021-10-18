@@ -41,6 +41,54 @@ namespace PRS_Server.Controllers
             return vendor;
         }
 
+        [HttpGet("vendor/{Id}")]
+        public async Task<IActionResult> PurchaseOrder(int id)
+        {
+            var vendor = await _context.Vendors.FindAsync(id);
+            if (vendor == null)
+            {
+                NotFound();
+            }
+            var orderVendor = new List<PoLines>();
+            orderVendor = await (from r in _context.Requests  //List of instances in vendororders that met the criteria of Approved
+                                 join rl in _context.RequestLines
+                                 on r.Id equals rl.RequestId
+                                 join u in _context.Users
+                                 on r.UserId equals u.Id
+                                 join p in _context.Products
+                                 on rl.ProductId equals p.Id
+                                 join v in _context.Vendors
+                                 on p.VendorId equals v.Id
+                                 where r.Status == "APPROVED" && v.Id == id
+                                 select new PoLines(p, rl.Quantity))     
+                                .ToListAsync();
+            var Dict = new Dictionary<string, PoLines>();
+            foreach (var i in orderVendor)
+            {
+                if (Dict.ContainsKey(i.Product.PartNbr) == true)
+                {
+                    Dict[i.Product.PartNbr].Quantity += i.Quantity;
+                    Dict[i.Product.PartNbr].LineTotal += i.LineTotal;
+                }
+                else
+                {
+                    Dict.Add(i.Product.PartNbr, i);
+                }
+            }
+            var PoReq = new PoRequests();
+            foreach (var i in Dict)
+            {
+                PoReq.Vendor = vendor;
+                PoReq.Header.Add(i.Value);
+                var Total = 0m;
+                foreach (var x in PoReq.Header)
+                {
+                    Total = Total + x.LineTotal;
+                }
+                PoReq.GrandTotal = Total;
+            }
+            return Ok(PoReq);
+        }
         // PUT: api/Vendors/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]

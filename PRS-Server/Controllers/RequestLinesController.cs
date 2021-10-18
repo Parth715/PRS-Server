@@ -19,6 +19,8 @@ namespace PRS_Server.Controllers
         {
             _context = context;
         }
+        //public RequestLinesController() { }
+        
 
         // GET: api/RequestLines
         [HttpGet]
@@ -56,6 +58,7 @@ namespace PRS_Server.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await ReCalculate(requestLine.RequestId);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -68,28 +71,11 @@ namespace PRS_Server.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
-        [HttpPut("update/{RequestId}")]
-        public async Task<IActionResult> CalculateTotal(int RequestId)
-        {
-            var request = await _context.Requests.FindAsync(RequestId);
-            if (request == null)
-            {
-                NotFound();
-            }
-            request.Total = (from rl in _context.RequestLines
-                             join p in _context.Products
-                             on rl.ProductId equals p.Id
-                             where rl.RequestId == RequestId
-                             select new { LineTotal = rl.Quantity * p.Price }).Sum(x => x.LineTotal);
-            await _context.SaveChangesAsync();
-            return Ok();
-;
-        }
+        
 
-        public async Task<IActionResult> ReCalculate(int requestId)
+        private async Task<IActionResult> ReCalculate(int requestId)
         {
             var request = await _context.Requests.FindAsync(requestId);
             if (request == null)
@@ -112,7 +98,7 @@ namespace PRS_Server.Controllers
         {
             _context.RequestLines.Add(requestLine);
             await _context.SaveChangesAsync();
-
+            await ReCalculate(requestLine.RequestId);
             return CreatedAtAction("GetRequestLine", new { id = requestLine.Id }, requestLine);
         }
 
@@ -128,6 +114,7 @@ namespace PRS_Server.Controllers
 
             _context.RequestLines.Remove(requestLine);
             await _context.SaveChangesAsync();
+            await ReCalculate(requestLine.RequestId);
 
             return NoContent();
         }
