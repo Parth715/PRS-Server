@@ -1,6 +1,8 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace PRS_Server.Models
@@ -13,10 +15,11 @@ namespace PRS_Server.Models
         public decimal Price { get; set; }
         public string Unit { get; set; }
         public string Photopath { get; set; }
+        
         public int VendorId { get; set; }
         public virtual Vendor Vendor { get; set; }
-
-        public virtual IEnumerable<RequestLine> RequestLines { get; set; }
+        [JsonIgnore]
+        public virtual ICollection<RequestLine> RequestLines { get; set; }
 
         public Product() { }
     }

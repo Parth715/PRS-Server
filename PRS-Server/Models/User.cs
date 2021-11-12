@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace PRS_Server.Models
@@ -17,6 +18,7 @@ namespace PRS_Server.Models
         public bool IsReviewer { get; set; }
         public bool IsAdmin { get; set; }
 
+        [JsonIgnore]
         public virtual IEnumerable<Request> Requests { get; set; }
         public User() { }
     }

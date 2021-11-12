@@ -22,7 +22,7 @@ namespace PRS_Server.Controllers
 
         // GET: api/Products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetStudents()
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
             return await _context.Products.ToListAsync();
         }
@@ -31,7 +31,9 @@ namespace PRS_Server.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var product = await _context.Products
+                                                .Include(x => x.Vendor)
+                                                .SingleOrDefaultAsync(x => x.Id == id);
 
             if (product == null)
             {

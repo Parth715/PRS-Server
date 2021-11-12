@@ -28,7 +28,13 @@ namespace PRS_Server
         {
 
             services.AddControllers();
-            services.AddDbContext<PRSDbContext>(x => { x.UseSqlServer(Configuration.GetConnectionString("PRSDbContext")); });
+
+            var connStrKey = "PRSDbContextWinHost";
+#if DEBUG
+            connStrKey = "PRSDbContext";
+#endif
+            services.AddDbContext<PRSDbContext>(x => { x.UseSqlServer(Configuration.GetConnectionString(connStrKey)); });
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,6 +44,7 @@ namespace PRS_Server
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseCors(x => x.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
             app.UseRouting();
 
@@ -47,6 +54,12 @@ namespace PRS_Server
             {
                 endpoints.MapControllers();
             });
+            using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                scope.ServiceProvider.GetService<PRSDbContext>().Database.Migrate();
+            }
+
+
         }
     }
 }
