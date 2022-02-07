@@ -20,18 +20,20 @@ namespace PRS_Server.Controllers
             _context = context;
         }
 
-        // GET: api/Requests
         [HttpGet("reviews/{userId}")]
         public async Task<ActionResult<IEnumerable<Request>>> GetRequestsInReview(int userId)
         {
-            var requests = await _context.Requests.Where(j => j.Status == "REVIEW" && j.UserId != userId).ToListAsync();
+            var requests = await _context.Requests.Where(j => j.Status == "REVIEW" || j.Status == "NEW" && j.UserId != userId).Include(x => x.User).ToListAsync();
             return requests;
         }
+        // GET: api/Requests
         [HttpGet]
-
         public async Task<ActionResult<IEnumerable<Request>>> GetRequests()
         {
-            return await _context.Requests.Include(x=>x.User).Include(x=>x.RequestLines).ThenInclude(rl=>rl.Product).ToListAsync();
+            return await _context.Requests.Include(x=>x.User)
+                                          .Include(x=>x.RequestLines)
+                                          .ThenInclude(rl=>rl.Product)
+                                          .ToListAsync();
         }
 
         // GET: api/Requests/5
@@ -40,6 +42,8 @@ namespace PRS_Server.Controllers
         {
             var request = await _context.Requests
                                                 .Include(x => x.User)
+                                                .Include(x=>x.RequestLines)
+                                                .ThenInclude(rl => rl.Product)
                                                 .SingleOrDefaultAsync(x => x.Id == id);
 
             if (request == null)
