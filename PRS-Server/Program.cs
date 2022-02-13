@@ -1,30 +1,29 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using PRS_Server.Controllers;
+using PRS_Server;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using PRS_Server.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
-namespace PRS_Server
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-            
-            
-        }
+var builder = WebApplication.CreateBuilder(args);
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
-    }
-}
+// Add services to the container.
+
+builder.Services.AddControllers();
+var conn = "PRSDbContextWinHost";
+#if DEBUG
+conn = "localPRS";
+#endif
+builder.Services.AddDbContext<PRSDbContext>(x => { x.UseSqlServer(builder.Configuration.GetConnectionString(conn)); });
+builder.Services.AddCors();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+app.UseRouting();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();

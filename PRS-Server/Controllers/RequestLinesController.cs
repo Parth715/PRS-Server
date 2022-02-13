@@ -87,6 +87,8 @@ namespace PRS_Server.Controllers
                              on rl.ProductId equals p.Id
                              where rl.RequestId == requestId
                              select new { LineTotal = rl.Quantity * p.Price }).Sum(x => x.LineTotal);
+            request.Status = "MODIFIED";
+            request.RejectionReason = " ";
             await _context.SaveChangesAsync();
             return Ok();
         }

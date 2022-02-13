@@ -23,7 +23,7 @@ namespace PRS_Server.Controllers
         [HttpGet("reviews/{userId}")]
         public async Task<ActionResult<IEnumerable<Request>>> GetRequestsInReview(int userId)
         {
-            var requests = await _context.Requests.Where(j => j.Status == "REVIEW" || j.Status == "NEW" && j.UserId != userId).Include(x => x.User).ToListAsync();
+            var requests = await _context.Requests.Where(j => (j.Status == "REVIEW" || j.Status == "NEW") && j.UserId != userId).Include(x => x.User).ToListAsync();
             return requests;
         }
         // GET: api/Requests
@@ -59,15 +59,11 @@ namespace PRS_Server.Controllers
         [HttpPut("review")]
         public async Task<IActionResult> SetRequestToReview(Request request)
         {
-            if (request.Status == "NEW")
+            if (request.Total <= 50)
             {
-                if (request.Total <= 50)
-                {
-                    request.Status = "APPROVED";
-                }
-                request.Status = "REVIEW";
+                request.Status = "APPROVED";
             }
-            
+            request.Status = "REVIEW";
             return await PutRequest(request.Id, request);
         }
         
@@ -77,7 +73,7 @@ namespace PRS_Server.Controllers
         {
             request.Status = "APPROVED";
             return await PutRequest(request.Id, request);
-            
+
         }
 
         [HttpPut("reject")]
@@ -86,7 +82,6 @@ namespace PRS_Server.Controllers
             request.Status = "REJECTED";
             return await PutRequest(request.Id, request);
         }
-
         [HttpPut("{id}")]
         public async Task<IActionResult> PutRequest(int id, Request request)
         {
@@ -112,9 +107,9 @@ namespace PRS_Server.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
+
 
         // POST: api/Requests
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
